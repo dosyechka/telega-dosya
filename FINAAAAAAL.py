@@ -20,12 +20,33 @@ logger = logging.getLogger(__name__)
 LOG_CHAT_ID = -1002497223445  # Здесь указываем ID чата с логами
 
 # Конфигурация приложения Dropbox
-APP_KEY = 'jsaum1ztcb1pbwo'
-APP_SECRET = 'kjppfyi9n5feamr'
-REFRESH_TOKEN = 'Ouxglix5vMcAAAAAAAAAAV01cuvfJn8sUMT8h3vUieP-ksSMob6OB-V209AK1JW_'
+APP_KEY = os.getenv("DROPBOX_APP_KEY")
+APP_SECRET = os.getenv("DROPBOX_APP_SECRET")
+REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN")
 
 # Путь для хранения токена
 TOKEN_FILE = 'dropbox_token.json'
+
+def refresh_access_token():
+    url = "https://api.dropbox.com/oauth2/token"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": REFRESH_TOKEN
+    }
+
+    response = requests.post(url, headers=headers, data=data, auth=(APP_KEY, APP_SECRET))
+
+    if response.status_code == 200:
+        access_token = response.json().get("access_token")
+        return access_token
+    else:
+        raise Exception(f"Failed to refresh token: {response.status_code}, {response.text}")
+
+# Пример использования
+access_token = refresh_access_token()
+
+# В дальнейшем используйте обновленный `access_token` для работы с Dropbox API
 
 def get_new_access_token():
     url = "https://api.dropbox.com/oauth2/token"
